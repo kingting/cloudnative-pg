@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: superuser-secret
+  namespace: $NAMESPACE
+  labels:
+    cnpg.io/reload: "true"
+type: kubernetes.io/basic-auth
+data:
+  username: ${SUPERUSER} # postgres
+  password: ${SUPERUSER_PASSWORD} # postgres
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+  namespace: $NAMESPACE
+  labels:
+    cnpg.io/reload: "true"
+type: kubernetes.io/basic-auth
+data:
+  username: ${APP_USER} # app
+  password: ${APP_PASSWORD} # app
+
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg-cluster
+  namespace: ${NAMESPACE}
+spec:
+  instances: 3
+  superuserSecret:
+    name: superuser-secret
+  primaryUpdateStrategy: unsupervised
+  postgresql:
+    parameters:
+      shared_buffers: 256MB
+      pg_stat_statements.max: '10000'
+      pg_stat_statements.track: all
+      auto_explain.log_min_duration: '10s'
+  bootstrap:
+    initdb:
+      database: ${APP_DB}
+      owner: ${APP_DB} 
+      secret:
+        name: app-secret
+  storage:
+    size: '1Gi'
+  enableSuperuserAccess: true
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pgclient
+  namespace: ${NAMESPACE}
+spec:
+  containers:
+  - name: pgclient
+    image: postgres
+    command: ["sleep"]
+    args: ["3600"]  # Keeps the container running for an hour
