@@ -7,16 +7,33 @@ then
   exit 1
 fi
 
-export COMMAND=$1
-export NAMESPACE=$2
-
-export APP_DB="app"
-export APP_USER="YXBw" # "app"
-export APP_PASSWORD="TW5idjEyMzQK" # "Mnbv1234"
-export SUPERUSER="cG9zdGdyZXMK" #"postgres"
-export SUPERUSER_PASSWORD="TW5idjEyMzQK" # "Mnbv1234"
+#-------------------------------------------------------------------
+# Parameters
+#-------------------------------------------------------------------
 DIR=$(dirname $0)
 
+export COMMAND=$1
+export NAMESPACE=$2
+export INSTANCE_COUNT=2
+
+# Getting the passwords from .credentials file (later can get the passwords from keyvault)
+if [[ -r "$DIR/.credentials" ]]; then
+    source "$DIR/.credentials"
+else
+    echo "Credentials file not found or not readable."
+    exit 1
+fi
+
+export APP_DB="app"
+export APP_USER="app" # "app"
+#export APP_PASSWORD='Mnbv1234' #
+export SUPERUSER="postgres" #"postgres"
+#export SUPERUSER_PASSWORD="Mnbv1234"
+export PG_CLUSTER="pg-cluster-1"
+
+#-------------------------------------------------------------------
+# Create the PG Cluster
+#-------------------------------------------------------------------
 # Check if the namespace exists
 if kubectl get namespace "$NAMESPACE" > /dev/null 2>&1; then
   echo "Namespace '$NAMESPACE' already exists"
@@ -32,18 +49,45 @@ else
   fi
 fi
 
-#kubectl create secret generic postgresql-secret \
-#  --from-file=password=$DIR/.password \
-#  -n $NAMESPACE
-
-#
 envsubst <  pg-cluster.yaml | kubectl $COMMAND -f - 
 
-# Run a pgclient to access the postgresql
-echo "Run the following to access the database"
-echo "kubectl exec -it pgclient -n dev  -- bash"
-# Run a pgclient to access the postgresql
-echo "psql -h pg-cluster-rw -U ${PG_USER} -d ${DATABASE}"
+# Check if COMMAND is 'delete'
+if [ "$COMMAND" = "delete" ]; then
+  kubectl delete ns $NAMESPACE 
+  echo "COMMAND is delete, end of script."
+  exit 0
+fi
 
-kubectl get secret superuser-secret -n ${NAMESPACE} -o jsonpath="{.data.password}" | base64 --decode
-kubectl get secret app-secret -n ${NAMESPACE} -o jsonpath="{.data.password}" | base64 --decode
+#-------------------------------------------------------------------
+# Set App user and Super user passwords
+#-------------------------------------------------------------------
+# Wait for pg-cluster-1 to be ready
+
+TIMEOUT=60 # Timeout in seconds
+
+end=$((SECONDS + TIMEOUT))
+
+while [ $SECONDS -lt $end ]; do
+    # Get the status of the Ready condition
+    READY=$(kubectl get pod $PG_CLUSTER -n $NAMESPACE -o json | jq -r '.status.conditions[] | select(.type=="Ready").status')
+
+    # Check if the pod is ready
+    if [ "$READY" = "True" ]; then
+        echo "Pod is ready."
+        break
+    fi
+
+    echo "$SECONDS : Waiting for pod to become ready..."
+    sleep 5
+done
+
+# Check if loop exited due to timeout
+if [ $SECONDS -ge $end ]; then
+    echo "Timed out waiting for pod to become ready."
+    exit 1
+fi
+
+# Check if the wait was successful
+echo "$PG_CLUSTER is ready. Proceeding with further commands."
+kubectl exec -it $PG_CLUSTER -n ${NAMESPACE} -- psql -U $SUPERUSER -c "ALTER USER ${APP_USER} WITH PASSWORD '${APP_PASSWORD}';"
+kubectl exec -it $PG_CLUSTER -n ${NAMESPACE} -- psql -U $SUPERUSER -c "ALTER USER ${SUPERUSER} WITH PASSWORD '${SUPERUSER_PASSWORD}';"

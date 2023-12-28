@@ -1,39 +1,12 @@
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: superuser-secret
-  namespace: $NAMESPACE
-  labels:
-    cnpg.io/reload: "true"
-type: kubernetes.io/basic-auth
-data:
-  username: ${SUPERUSER} # postgres
-  password: ${SUPERUSER_PASSWORD} # postgres
-
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: app-secret
-  namespace: $NAMESPACE
-  labels:
-    cnpg.io/reload: "true"
-type: kubernetes.io/basic-auth
-data:
-  username: ${APP_USER} # app
-  password: ${APP_PASSWORD} # app
-
----
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: pg-cluster
   namespace: ${NAMESPACE}
 spec:
-  instances: 3
-  superuserSecret:
-    name: superuser-secret
+  instances: ${INSTANCE_COUNT}
+  #superuserSecret:
+  #  name: superuser-secret
   primaryUpdateStrategy: unsupervised
   postgresql:
     parameters:
@@ -44,9 +17,9 @@ spec:
   bootstrap:
     initdb:
       database: ${APP_DB}
-      owner: ${APP_DB} 
-      secret:
-        name: app-secret
+      owner: ${APP_USER} 
+  #    secret:
+  #      name: app-secret
   storage:
     size: '1Gi'
   enableSuperuserAccess: true
