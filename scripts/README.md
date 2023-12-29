@@ -1,7 +1,7 @@
 # Install Kubernetes
-kind create cluster -name pg
+./start-kind.sh
 
-# Install CloudNativePG Operator
+# Install CloudNativePG Operator and kubectl cnpg plugin
 ./install.sh
 
 # Deploy a PostgreSQL cluster and pgclient
@@ -22,3 +22,7 @@ ALTER USER app WITH PASSWORD 'Mnbv1234';
 ## Run a pgclient to access the postgresql via network
 kubectl exec -it pgclient -n dev -- bash
 psql -h pg-cluster-rw -U app
+
+# Operate cnpg
+
+kubectl cpng status pg-cluster -n dev
