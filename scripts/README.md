@@ -36,3 +36,9 @@ INSERT INTO replication_test (test_value) VALUES ('Replication test 1'), ('Repli
 ## Query data on the replication instance
 psql -h pg-cluster-rw -U postgres
 SELECT * FROM replication_test;
+
+## Test Primary failuer and switchover to Standby
+
+## Bring back Primary
+
+# Test backup and restore ???
