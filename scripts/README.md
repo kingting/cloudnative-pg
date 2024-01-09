@@ -1,4 +1,11 @@
-# Install Kubernetes
+# You have the option of using k3d or kind to turn the kubernetes cluster
+
+# Option 1 using k3d as kubernetes cluster
+./start-k3d.sh  # This will create a kubernetes cluster with the localhost:5000 registry
+
+./delete-k3d.sh # To delete the cluster
+
+# Option 2 using kind to install Kubernetes (not configure with docker registry)
 ./start-kind.sh
 
 # Install CloudNativePG Operator and kubectl cnpg plugin
