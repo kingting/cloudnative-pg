@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alpine-deployment
+  labels:
+    app: alpine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alpine
+  template:
+    metadata:
+      labels:
+        app: alpine
+    spec:
+      containers:
+      - name: alpine
+        image: k3d-cluster-registry:5000/alpine
+        command: ["sh", "-c", "echo Hello Alpine; sleep 3600"]

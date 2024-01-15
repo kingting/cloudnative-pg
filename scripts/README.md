@@ -1,7 +1,7 @@
 # You have the option of using k3d or kind to turn the kubernetes cluster
 
-# Option 1 using k3d as kubernetes cluster
-./start-k3d.sh  # This will create a kubernetes cluster with the localhost:5000 registry
+# Option 1 using k3d as kubernetes cluster and create a cluster registry
+./start-k3d.sh  
 
 ./delete-k3d.sh # To delete the cluster
 
@@ -49,3 +49,21 @@ SELECT * FROM replication_test;
 ## Bring back Primary
 
 # Test backup and restore ???
+
+# To test a local registry
+docker pull alpine
+docker tag alpine localhost:5000/alpine
+docker push localhost:5000/alpine
+
+# Create a pod yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+spec:
+  containers:
+  - name: alpine
+    image: localhost:5000/alpine
+
+# Apply the yaml
+kubectl apply -f test-pod.yaml
