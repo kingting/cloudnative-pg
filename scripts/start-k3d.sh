@@ -8,7 +8,8 @@ CLUSTER_REGISTRY="k3d-${CLUSTER_NAME}-registry"
 #k3d registry create localhost --port 5000
 
 # Create a K3d cluster and a dedicated registry for the cluster
-k3d cluster create $CLUSTER_NAME --registry-create ${CLUSTER_REGISTRY}:0.0.0.0:5000 
+# Forward the looad balancer to the devcontainer host 
+k3d cluster create $CLUSTER_NAME --port 80:80@loadbalancer --registry-create ${CLUSTER_REGISTRY}:0.0.0.0:5000 
 
 # Merge K3d kubeconfig to default kubeconfig and switch context
 k3d kubeconfig merge $CLUSTER_NAME --kubeconfig-switch-context
