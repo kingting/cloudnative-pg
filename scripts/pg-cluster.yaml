@@ -23,6 +23,16 @@ spec:
   storage:
     size: '1Gi'
   enableSuperuserAccess: true
+  backup:
+    barmanObjectStore:
+      destinationPath: "s3://test-beauburra/cloudnative-pg"
+      s3Credentials:
+        accessKeyId:
+          name: aws-creds
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: aws-creds
+          key: ACCESS_SECRET_KEY
 
 ---
 apiVersion: v1
