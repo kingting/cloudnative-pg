@@ -16,7 +16,7 @@ k3d kubeconfig merge $CLUSTER_NAME --kubeconfig-switch-context
 
 echo "K3d cluster $CLUSTER_NAME started and kubeconfig is set."
 echo "Cluster registry: ${CLUSTER_REGISTRY}:5000"
-
+echo "docker pull alpine:latest"
 echo "docker tag alpine:latest localhost:5000/alpine:latest"
 echo "docker push localhost:5000/alpine:latest"
 echo "curl -X GET http://localhost:5000/v2/"
