@@ -50,6 +50,13 @@ SELECT * FROM replication_test;
 ## Bring back Primary
 
 # Test backup and restore ???
+## Configure Barman backup
+### Setup s3 access keys as kubernetes secret
+### Use the sample.credentials to setup relevant access keys and secret as env variables
+### Run this script to create the secret
+./aws-creds.sh
+
+...
 
 # To test a local registry
 docker pull alpine
