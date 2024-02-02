@@ -1,4 +1,5 @@
 # You have the option of using k3d or kind to turn the kubernetes cluster
+./install-k3d.sh  # Install k3d if not running in the devcontainer
 
 # Option 1 using k3d as kubernetes cluster and create a cluster registry
 ./start-k3d.sh  
@@ -12,10 +13,10 @@
 ./install.sh
 
 # Deploy a PostgreSQL cluster and pgclient
-./run.sh apply dev
+./pg-cluster.sh apply dev
 
 # Delete a PostgreSQL cluster and pgclient
-./run.sh delete dev
+./pg-cluster.sh delete dev
 
 ## Exec into cluster and login to access the database using Peer authentication
 kubectl exec -it pg-cluster-1 -n dev -- bash
