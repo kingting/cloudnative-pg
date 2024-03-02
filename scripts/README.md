@@ -33,7 +33,7 @@ psql -h pg-cluster-rw -U app
 
 # Operate cnpg
 
-kubectl cpng status pg-cluster -n dev
+kubectl cnpg status pg-cluster -n dev
 
 # Test replication
 ## Create table and insert data in the rw instance

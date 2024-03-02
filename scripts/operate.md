@@ -1,7 +1,7 @@
 
 # Operate cnpg
 
-kubectl cpng status pg-cluster -n dev
+kubectl cnpg status pg-cluster -n dev
 
 # Test backup and restore ???
 
