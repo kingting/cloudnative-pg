@@ -16,6 +16,9 @@ export COMMAND=$1
 export NAMESPACE=$2
 export INSTANCE_COUNT=2
 
+#-------------------------------------------------------------------
+# Create database credentials and s3 credential for barman backup 
+#-------------------------------------------------------------------
 # Getting the passwords from .credentials file (later can get the passwords from keyvault)
 if [[ -r "$DIR/.credentials" ]]; then
     source "$DIR/.credentials"
@@ -23,13 +26,13 @@ else
     echo "Credentials file not found or not readable."
     exit 1
 fi
+./aws-creds.sh
 
 export APP_DB="app"
 export APP_USER="app" # "app"
-#export APP_PASSWORD='Mnbv1234' #
 export SUPERUSER="postgres" #"postgres"
-#export SUPERUSER_PASSWORD="Mnbv1234"
 export PG_CLUSTER="pg-cluster-1"
+
 
 #-------------------------------------------------------------------
 # Create the PG Cluster
@@ -91,3 +94,4 @@ fi
 echo "$PG_CLUSTER is ready. Proceeding with further commands."
 kubectl exec -it $PG_CLUSTER -n ${NAMESPACE} -- psql -U $SUPERUSER -c "ALTER USER ${APP_USER} WITH PASSWORD '${APP_PASSWORD}';"
 kubectl exec -it $PG_CLUSTER -n ${NAMESPACE} -- psql -U $SUPERUSER -c "ALTER USER ${SUPERUSER} WITH PASSWORD '${SUPERUSER_PASSWORD}';"
+

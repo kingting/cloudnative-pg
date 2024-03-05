@@ -24,5 +24,7 @@
   "forwardPorts": [80]
 
   // Enable kubectl short alias with completion
-  "postCreateCommand": "echo 'alias k=kubectl; complete -F __start_kubectl k' >> ~/.bash_aliases; git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1; echo 'if [ -f \"$HOME/.bash-git-prompt/gitprompt.sh\" ]; then . \"$HOME/.bash-git-prompt/gitprompt.sh\"; fi' >> ~/.bashrc"
+  // "postCreateCommand": "echo 'alias k=kubectl; complete -F __start_kubectl k' >> ~/.bash_aliases; git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1; echo 'if [ -f \"$HOME/.bash-git-prompt/gitprompt.sh\" ]; then . \"$HOME/.bash-git-prompt/gitprompt.sh\"; fi' >> ~/.bashrc"
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y curl unzip && curl 'https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip' -o 'awscliv2.zip' && unzip awscliv2.zip && sudo ./aws/install && rm awscliv2.zip && rm -rf aws && curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash && echo 'alias k=kubectl; complete -F __start_kubectl k' >> ~/.bash_aliases && git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1 && echo 'if [ -f \"$HOME/.bash-git-prompt/gitprompt.sh\" ]; then . \"$HOME/.bash-git-prompt/gitprompt.sh\"; fi' >> ~/.bashrc"
+
 }

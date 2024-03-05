@@ -10,7 +10,7 @@
 ./start-kind.sh
 
 # Install CloudNativePG Operator and kubectl cnpg plugin
-./install-cn-pg.sh
+./install-cnpg-operator.sh
 
 # Deploy a PostgreSQL cluster and pgclient
 ./pg-cluster.sh apply dev
