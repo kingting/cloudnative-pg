@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pgsql-pvc-pod
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    command: ["/bin/sleep", "infinity"]
+    volumeMounts:
+    - mountPath: "/mnt/data"
+      name: pgsql-volume
+  volumes:
+  - name: pgsql-volume
+    persistentVolumeClaim:
+      claimName: pgsql-pvc

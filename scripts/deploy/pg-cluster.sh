@@ -15,6 +15,7 @@ DIR=$(dirname $0)
 export COMMAND=$1
 export NAMESPACE=$2
 export INSTANCE_COUNT=2
+export STORAGE_CLASS="openebs-hostpath"
 
 #-------------------------------------------------------------------
 # Create database credentials and s3 credential for barman backup 
