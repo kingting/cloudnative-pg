@@ -1,84 +1,146 @@
-# Test the ingress
-kubectl apply -f nginx-deployment.yaml
-kubectl apply -f nginx-service.yaml
-kubectl apply -f nginx-ingress.yaml
+# Kubernetes Deployment Guide
 
-export INGRESS_IP=$(kubectl get service traefik  -n kube-system | grep traefik | awk '{print $4}')
-echo "Ingress IP Address: $INGRESS_IP"
+This README outlines the steps for deploying components in your Kubernetes environment, setting up storage classes, and managing a PostgreSQL database.
 
-curl --header "Host: nginx.ingress" http://$INGRESS_IP
+## Ingress Setup
 
-# Install openebs operator to create openebs-hostpath storage class
-kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml
+To deploy the ingress resources and test your ingress setup, follow these steps:
 
-# Make openebs-hostpath as default storage class
-../set-default-sc.sh # After this you can run "../pg-cluster.sh apply dev" to create the pg cluster
+1. Apply the Nginx configurations:
 
-#kubectl apply -f https://openebs.github.io/dynamic-nfs-provisioner/latest/nfs-operator.yaml
+    ```bash
+    kubectl apply -f nginx-deployment.yaml
+    kubectl apply -f nginx-service.yaml
+    kubectl apply -f nginx-ingress.yaml
+    ```
 
-# Create storage class for openebs nfs storage 
-#kubectl apply -f openebs-rwx-sc.yaml
+2. Retrieve the Ingress IP address and test the setup:
 
-# Deploy a PostgreSQL cluster and pgclient
+    ```bash
+    export INGRESS_IP=$(kubectl get service traefik -n kube-system | grep traefik | awk '{print $4}')
+    echo "Ingress IP Address: $INGRESS_IP"
+    curl --header "Host: nginx.ingress" http://$INGRESS_IP
+    ```
+
+## Storage Configuration
+
+### OpenEBS Operator and Storage Class Setup
+
+1. Install the OpenEBS operator to enable the `openebs-hostpath` storage class:
+
+    ```bash
+    kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml
+    ```
+
+2. Set `openebs-hostpath` as the default storage class:
+
+    ```bash
+    ../set-default-sc.sh # Run this then "../pg-cluster.sh apply dev" to create the pg cluster
+    ```
+
+### NFS Provisioner and Storage Class Installation
+
+Install the NFS provisioner and the OpenEBS RWX storage class:
+
+```bash
+kubectl apply -f https://openebs.github.com/charts/nfs-operator.yaml
+```
+
+## PostgreSQL Cluster Management
+
+### Deployment
+
+Deploy a PostgreSQL cluster along with a client for interaction:
+
+```bash
 ./pg-cluster.sh apply dev
+```
 
-# Delete a PostgreSQL cluster and pgclient
+### Deletion
+
+Remove the PostgreSQL cluster and its client:
+
+```bash
 ./pg-cluster.sh delete dev
+```
 
-## Exec into cluster and login to access the database using Peer authentication
-kubectl exec -it pg-cluster-1 -n dev -- bash
+## Database Operations
 
-## Login to PG server using Linux peer authentication
-psql -U postgres
+### Access and Configuration
 
-## Change app password
-ALTER USER app WITH PASSWORD 'Mnbv1234';
+1. Access the cluster:
 
-## Run a pgclient to access the postgresql via network
-kubectl exec -it pgclient -n dev -- bash
-psql -h pg-cluster-rw -U app
+    ```bash
+    kubectl exec -it pg-cluster-1 -n dev -- bash
+    ```
 
-# Operate cnpg
+2. Log into the PostgreSQL server:
 
+    ```bash
+    psql -U postgres
+    ```
+
+3. Change the application password:
+
+    ```sql
+    ALTER USER app WITH PASSWORD 'Mnbv1234';
+    ```
+
+4. Connect using the network:
+
+    ```bash
+    kubectl exec -it pgclient -n dev -- bash
+    psql -h pg-cluster-rw -U app
+    ```
+
+## Cluster Management with CNPG
+
+Check the status of your PostgreSQL cluster:
+
+```bash
 kubectl cnpg status pg-cluster -n dev
+```
 
-# Test replication
-## Create table and insert data in the rw instance
-psql -h pg-cluster-rw -U postgres
-CREATE TABLE replication_test (id SERIAL PRIMARY KEY, test_value TEXT);
-INSERT INTO replication_test (test_value) VALUES ('Replication test 1'), ('Replication test 2');
+## Replication Testing
 
-## Query data on the replication instance ro instance
-psql -h pg-cluster-ro -U postgres
-SELECT * FROM replication_test;
+1. Insert data into the read-write instance:
 
-## Test Primary failuer and switchover to Standby
+    ```sql
+    psql -h pg-cluster-rw -U postgres
+    CREATE TABLE replication_test (id SERIAL PRIMARY KEY, test_value TEXT);
+    INSERT INTO replication_test (test_value) VALUES ('Replication test 1'), ('Replication test 2');
+    ```
 
-## Bring back Primary
+2. Query data from the read-only instance:
 
-# Test backup and restore ???
-## Configure Barman backup
-### Setup s3 access keys as kubernetes secret
-### Use the sample.credentials to setup relevant access keys and secret as env variables
-### Run this script to create the secret
-./aws-creds.sh
+    ```sql
+    psql -h pg-cluster-ro -U postgres
+    SELECT * FROM replication_test;
+    ```
 
-...
+## Backup and Restore Configuration
 
-# To test a local registry
+Configure and test Barman backup solutions:
+
+1. Set up AWS S3 access keys as a Kubernetes secret:
+
+    ```bash
+    ./aws-creds.sh
+    ```
+
+## Local Registry Testing
+
+Test your local Docker registry by pulling, tagging, and pushing an image:
+
+```bash
 docker pull alpine
 docker tag alpine localhost:5000/alpine
 docker push localhost:5000/alpine
+```
 
-# Create a pod yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: test-pod
-spec:
-  containers:
-  - name: alpine
-    image: localhost:5000/alpine
+Apply the pod YAML to test the deployment:
 
-# Apply the yaml
+```bash
 kubectl apply -f test-pod.yaml
+```
+
